@@ -166,7 +166,7 @@ def main():
     df_events = (
         sql.read
         .option("basePath", events_base_path)
-        .parquet(*events_paths)     # Заходим во все партиции
+        .parquet(*events_paths)
     )
     df_messages = df_events.filter(F.col("event_type") == "message")
     df_cities = sql.read.csv(geo_cities_path, sep=";", header=True, inferSchema=True)
@@ -199,7 +199,7 @@ def main():
     )
     print(" . done.")
     
-    output_path = f"{output_base_path}/date={date}/days={days_count}/home_days={home_days_count}"
+    output_path = f"{output_base_path}/user_locations/date={date}/days={days_count}/home_days={home_days_count}"
     print(f"Writing data to {output_path}...")
     df_user_locations.write.mode("overwrite").parquet(output_path)
     print(" . done.")

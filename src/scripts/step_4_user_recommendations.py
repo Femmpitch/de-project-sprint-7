@@ -17,6 +17,8 @@ from utils import get_timezone_column, get_distance_formula, get_events_closest_
 
 
 def get_subscriptions_users_unique_pairs(df_events):
+
+    # Сначала найдем все подписки
     df_users_subscriptions = (
         df_events
         .filter(F.col("event_type") == "subscription")
@@ -25,11 +27,14 @@ def get_subscriptions_users_unique_pairs(df_events):
             F.col("event.subscription_channel")
         ).distinct()
     )
+
+    # Затем генерируем пары: датафрейм сам с собой (все варианты)
     df_user_pairs_all = df_users_subscriptions.alias("df1").join(
         df_users_subscriptions.alias("df2"),
         F.col("df1.subscription_channel") == F.col("df2.subscription_channel")
     )
 
+    # Фильтруем пары: убираем перестановки и пары c одним и тем же юзером
     df_subscriptions_user_pairs = (
         df_user_pairs_all
         .filter(
@@ -62,6 +67,7 @@ def get_messages_users_unique_pairs(df_events):
 
 
 def get_users_latest_message(df_events):
+    # Ищем последние сообщения пользователя (понадобится для расчета текущего расстояния и local_time)
     df_users_latest_message = (
         df_events
         .filter(F.col("event_type") == "message")
@@ -156,10 +162,10 @@ def get_user_recommendations(date, maximum_distance_km, df_subscriptions_user_pa
 
     distance_formula = get_distance_formula("lat_left", "lon_left", "lat_right", "lon_right")
 
-    
     # Пишу так, потому что сделал скрипт по конкретным дням, а не последнему.
     processed_dttm = F.lit(f"{date} 23:59:59").cast("timestamp")
     
+    print(" . Step 4. Calculating distance and filter it")
     df_user_recommendations = (
         df_with_all_coords
         .withColumn("distance", distance_formula) 

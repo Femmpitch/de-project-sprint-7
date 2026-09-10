@@ -16,7 +16,7 @@ from utils import input_paths, get_events_closest_cities
 
 def get_zone_stats(df_events_closest_cities):
     
-    
+    # Добавляем дату первого сообщения, а также месяц и неделю
     df_zone_prepared = (
         df_events_closest_cities
         .withColumn("month", F.month(F.col("date")))
@@ -33,6 +33,7 @@ def get_zone_stats(df_events_closest_cities):
 
     )
 
+    # Считаем статистики: сначала для месяца, потом для недели
     df_stats_month = (
         df_zone_prepared
         .groupBy("month", F.col("city").alias("zone_id"))
@@ -67,7 +68,7 @@ def get_zone_stats(df_events_closest_cities):
         )
     )
     
-    
+    # Джоин обоих датафреймов. Left - потому что хотим продублировать данные месяца для каждой недели
     df_zone_statistics = df_stats_week.join(
         df_stats_month, 
         on=["month", "zone_id"], 

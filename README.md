@@ -46,7 +46,9 @@
 /usr/lib/spark/bin/spark-submit --master yarn --deploy-mode cluster --py-files src/scripts/utils.py  src/scripts/step_4_user_recommendations.py 2022-06-21 120 /user/s18314377/data/geo/geo.csv 1 /user/master/data/geo/events /user/s18314377/analytics
 ```
 
+Я сделал запуски для `date=2022-06-21/days=120` для всех трех витрин, в директории `/user/s18314377/analytics`
 
+В DAG сделал небольшие запуски за 15 дней, чтобы проверить работоспособность. Ограничил 1 днем - последним.
 
 ### Как работать с репозиторием
 1. В вашем GitHub-аккаунте автоматически создастся репозиторий `de-project-sprint-7` после того, как вы привяжете свой GitHub-аккаунт на Платформе.

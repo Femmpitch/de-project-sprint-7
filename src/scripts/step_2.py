@@ -1,17 +1,12 @@
-from datetime import datetime, timedelta
 import sys
 
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SQLContext
-import pyspark.sql.functions as F
 from pyspark.sql.window import Window
-from pyspark.sql.types import DoubleType
-from pyspark.sql.types import LongType
+import pyspark.sql.functions as F
 
-import pyspark
-from pyspark.sql import SparkSession
 
-from .utils import get_timezone_column
+from .utils import get_timezone_column, input_paths, get_events_closest_cities
 
 
 
@@ -62,7 +57,6 @@ def get_users_home_cities(df_messages_closest_cities, days_count=27):
     )
     
     return df_result.select("user_id", F.col("city").alias("home_city"))
-
 
 
 def get_users_travel_info(df_messages_closest_cities):
@@ -118,7 +112,6 @@ def get_users_travel_info(df_messages_closest_cities):
     return df_final_metrics
 
 
-
 def get_user_local_time(df_events):
 
     df_local_time = (
@@ -154,13 +147,12 @@ def get_user_local_time(df_events):
     return df_local_time_latest
 
 
-
-def main(events_dir, geo_path, home_days_count=27):
+def main():
     
     date = sys.argv[1]
     days_count = sys.argv[2]
     geo_cities_path = sys.argv[4]
-    home_days = sys.argv[5]
+    home_days_count = sys.argv[5]
     events_base_path = sys.argv[3]
     output_base_path = sys.argv[4]    
     
@@ -168,43 +160,49 @@ def main(events_dir, geo_path, home_days_count=27):
     conf = SparkConf().setAppName(f"UserLocationsJob-{date}-d{days_count}")
     sc = SparkContext(conf=conf)
     sql = SQLContext(sc)
-    
-    df_user_interests = calculate_user_interests(date, int(days_count), events_base_path, sql)
-    df_user_interests.write.parquet(f"{output_base_path}/date={date}")
-                               
-    
-    
-    
+
+    print("Stage 0. Reading events and geo cities...")
+    events_paths = input_paths(date=date, depth=days_count, data_dir=events_base_path)
     df_events = (
-        spark.read
+        sql.read
         .option("pathGlobFilter", "*part-000*.parquet") # Читаем только самый первый под-файл в каждой папке
-        .parquet(events_dir)     # Заходим во все партиции
+        .parquet(*events_paths)     # Заходим во все партиции
     )
     df_messages = df_events.filter(F.col("event_type") == "message")
-    df_cities = spark.read.csv(geo_path, sep=";", header=True, inferSchema=True)
+    df_cities = sql.read.csv(geo_cities_path, sep=";", header=True, inferSchema=True)
+    print(" . done.")
+
     
-    ### Этап 1. Ищем ближайшие города к каждому сообщению
-    df_messages_closest_cities = get_messages_closest_cities(df_messages, df_cities)
+    print("Stage 1. Searching for closest cities for every message...")
+    df_messages_closest_cities = get_events_closest_cities(df_messages, df_cities)
+    print(" . done.")
     
-    ### Этап 2. Ищем последний город пользователя и последний домашний город пользователя
+    print("Stage 2. Searching for user act_city and home_city..")
     df_act_cities = get_users_act_cities(df_messages_closest_cities)
     df_home_cities = get_users_home_cities(df_messages_closest_cities, days_count=home_days_count)
-    
-    ### Этап 3. Ищем статистику путешествий
+    print(" . done.")
+
+    print("Stage 3. Searching for user travel activity...")
     df_travel_info = get_users_travel_info(df_messages_closest_cities)
+    print(" . done.")
     
-    
-    ### Этап 4. Ищем местное время
+    print("Stage 4. Searching for user local_time...")
     df_local_time = get_user_local_time(df_messages_closest_cities)
+    print(" . done.")
     
-    
-    df_result = (
+    print("Joining results ...")
+    df_user_locations = (
         df_act_cities
         .join(df_home_cities, on="user_id", how="outer")
         .join(df_travel_info, on="user_id", how="outer")
         .join(df_local_time, on="user_id", how="outer")
     )
-    return df_result
+    print(" . done.")
+    
+    output_path = f"{output_base_path}/date={date}"
+    print(f"Writing data to {output_path}...")
+    df_user_locations.write.mode("ovewrite").parquet()
+    print(" . done.")
     
 
 if __name__ == "__main__":

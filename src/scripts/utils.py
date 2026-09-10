@@ -13,7 +13,6 @@ from pyspark.sql import SparkSession
 
 
 def input_paths(date, depth, data_dir):
-    
     start_date = datetime.strptime(date, "%Y-%m-%d")
     
     result = []

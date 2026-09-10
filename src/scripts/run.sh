@@ -1,0 +1,2 @@
+# Запуск Step_2: User Locations
+/usr/lib/spark/bin/spark-submit --master local  src/scripts/step_2.py 2022-05-01 7 /user/s18314377/data/geo/geo.csv 3 /user/master/data/geo/events /user/s18314377/analytics/user_locations

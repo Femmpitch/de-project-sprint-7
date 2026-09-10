@@ -6,7 +6,7 @@ from pyspark.sql.window import Window
 import pyspark.sql.functions as F
 
 
-from .utils import get_timezone_column, input_paths, get_events_closest_cities
+from utils import get_timezone_column, input_paths, get_events_closest_cities
 
 
 
@@ -150,11 +150,11 @@ def get_user_local_time(df_events):
 def main():
     
     date = sys.argv[1]
-    days_count = sys.argv[2]
-    geo_cities_path = sys.argv[4]
-    home_days_count = sys.argv[5]
-    events_base_path = sys.argv[3]
-    output_base_path = sys.argv[4]    
+    days_count = int(sys.argv[2])
+    geo_cities_path = sys.argv[3]
+    home_days_count = int(sys.argv[4])
+    events_base_path = sys.argv[5]
+    output_base_path = sys.argv[6]    
     
     
     conf = SparkConf().setAppName(f"UserLocationsJob-{date}-d{days_count}")
@@ -165,7 +165,7 @@ def main():
     events_paths = input_paths(date=date, depth=days_count, data_dir=events_base_path)
     df_events = (
         sql.read
-        .option("pathGlobFilter", "*part-000*.parquet") # Читаем только самый первый под-файл в каждой папке
+        .option("basePath", events_base_path)
         .parquet(*events_paths)     # Заходим во все партиции
     )
     df_messages = df_events.filter(F.col("event_type") == "message")
@@ -199,9 +199,9 @@ def main():
     )
     print(" . done.")
     
-    output_path = f"{output_base_path}/date={date}"
+    output_path = f"{output_base_path}/date={date}/days={days_count}/home_days={home_days_count}"
     print(f"Writing data to {output_path}...")
-    df_user_locations.write.mode("ovewrite").parquet()
+    df_user_locations.write.mode("overwrite").parquet(output_path)
     print(" . done.")
     
 

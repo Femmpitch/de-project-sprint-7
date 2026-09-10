@@ -64,7 +64,7 @@ def get_events_closest_cities(df_events, df_cities):
     ).withColumn("row_unique_id", F.monotonically_increasing_id())
     
     df_joined = df_events_prepared.crossJoin(F.broadcast(df_cities_prepared))
-    distance_formula = get_distance_formula("event", "city")
+    distance_formula = get_distance_formula("event_lat", "event_lon", "city_lat", "city_lon")
     
     df_joined = df_joined.withColumn("distance", distance_formula)
     window = Window().partitionBy('row_unique_id').orderBy("distance")

@@ -156,6 +156,25 @@ def get_user_local_time(df_events):
 
 
 def main(events_dir, geo_path, home_days_count=27):
+    
+    date = sys.argv[1]
+    days_count = sys.argv[2]
+    geo_cities_path = sys.argv[4]
+    home_days = sys.argv[5]
+    events_base_path = sys.argv[3]
+    output_base_path = sys.argv[4]    
+    
+    
+    conf = SparkConf().setAppName(f"UserLocationsJob-{date}-d{days_count}")
+    sc = SparkContext(conf=conf)
+    sql = SQLContext(sc)
+    
+    df_user_interests = calculate_user_interests(date, int(days_count), events_base_path, sql)
+    df_user_interests.write.parquet(f"{output_base_path}/date={date}")
+                               
+    
+    
+    
     df_events = (
         spark.read
         .option("pathGlobFilter", "*part-000*.parquet") # Читаем только самый первый под-файл в каждой папке

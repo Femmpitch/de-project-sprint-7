@@ -12,6 +12,17 @@ import pyspark
 from pyspark.sql import SparkSession
 
 
+def input_paths(date, depth, data_dir):
+    
+    start_date = datetime.strptime(date, "%Y-%m-%d")
+    
+    result = []
+    for i in range(depth):
+        current_date = start_date - timedelta(days=i)
+        result.append(f"{data_dir}/date={current_date.strftime('%Y-%m-%d')}")
+    return result
+
+
 def clean_coord(col_name):
     return F.regexp_replace(F.col(col_name), ",", ".").cast(DoubleType())
 

@@ -81,8 +81,8 @@ def main():
     date = sys.argv[1]
     days_count = int(sys.argv[2])
     geo_cities_path = sys.argv[3]
-    events_base_path = sys.argv[5]
-    output_base_path = sys.argv[6]    
+    events_base_path = sys.argv[4]
+    output_base_path = sys.argv[5]    
     
     
     conf = SparkConf().setAppName(f"CityStatisticsJob-{date}-d{days_count}")
@@ -97,11 +97,11 @@ def main():
         .option("basePath", events_base_path)
         .parquet(*events_paths)
     )
-    df_messages = df_events.filter(F.col("event_type") == "message")
     df_cities = sql.read.csv(geo_cities_path, sep=";", header=True, inferSchema=True)
         
     print("Stage 1. Searching for closest cities for every message...")
     df_events_closest_cities = get_events_closest_cities(df_events, df_cities)
+    df_events_closest_cities.cache()
     
     print("Stage 2. Searching for cities monthly and weekly statistics...")
     df_zone_statistics = get_zone_stats(df_events_closest_cities)

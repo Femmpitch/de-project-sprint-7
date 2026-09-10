@@ -175,6 +175,8 @@ def main():
     
     print("Stage 1. Searching for closest cities for every message...")
     df_messages_closest_cities = get_events_closest_cities(df_messages, df_cities)
+    df_messages_closest_cities.cache()
+
     print(" . done.")
     
     print("Stage 2. Searching for user act_city and home_city..")

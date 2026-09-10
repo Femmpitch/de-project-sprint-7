@@ -17,17 +17,17 @@ default_args = {
 }
 
 dag_spark = DAG(
-    dag_id = "datalake_etl",
+    dag_id = "de_project_sprint_7",
     default_args=default_args,
     schedule_interval=None,
 )
 
 user_locations = SparkSubmitOperator(
-    task_id='user_locations',
+    task_id='step_2_user_locations',
     dag=dag_spark,
     application ='../scripts/step_2_user_locations.py' ,
     conn_id= 'yarn_spark',
-    application_args = ["2022-06-21", 7, "/user/s18314377/data/geo/geo.csv", "3" "/user/master/data/geo/events", "/user/s18314377/analytics"],
+    application_args = ["2022-06-21", 7, "/user/s18314377/data/geo/geo.csv", 3, "/user/master/data/geo/events", "/user/s18314377/analytics"],
     conf={
         "spark.driver.maxResultSize": "20g"
     },
@@ -35,86 +35,31 @@ user_locations = SparkSubmitOperator(
     executor_memory = '1g'
 )
 
-user_locations
+zone_statistics = SparkSubmitOperator(
+    task_id='step_3_zone_statistics',
+    dag=dag_spark,
+    application ='../scripts/step_3_zone_statistics.py' ,
+    conn_id= 'yarn_spark',
+    application_args = ["2022-06-21", 7, "/user/s18314377/data/geo/geo.csv", "/user/master/data/geo/events", "/user/s18314377/analytics"],
+    conf={
+        "spark.driver.maxResultSize": "20g"
+    },
+    executor_cores = 1,
+    executor_memory = '1g'
+)
 
-            # verified_tags_candidates_d7 = SparkSubmitOperator(
-            # task_id='verified_tags_candidates_d7',
-            # dag=dag_spark,
-            # application ='/home/username/verified_tags_candidates.py' ,
-            # conn_id= 'yarn_spark',
-            # application_args = ["2022-05-31", "7", "100", "/user/username/data/events", "/user/master/data/snapshots/tags_verified/actual", "/user/username/data/analytics/verified_tags_candidates_d7"],
-            # conf={
-            # "spark.driver.maxResultSize": "20g"
-            # },
-            # executor_cores = 1,
-            # executor_memory = '1g'
-            # )
+user_recommendations = SparkSubmitOperator(
+    task_id='step_4_user_recommendations',
+    dag=dag_spark,
+    application ='../scripts/step_4_user_recommendations.py' ,
+    conn_id= 'yarn_spark',
+    application_args = ["2022-06-21", 7, "/user/s18314377/data/geo/geo.csv", 10, "/user/master/data/geo/events", "/user/s18314377/analytics"],
+    conf={
+        "spark.driver.maxResultSize": "20g"
+    },
+    executor_cores = 1,
+    executor_memory = '1g'
+)
 
-            # verified_tags_candidates_d84 = SparkSubmitOperator(
-            # task_id='verified_tags_candidates_d84',
-            # dag=dag_spark,
-            # application ='/home/username/verified_tags_candidates.py' ,
-            # conn_id= 'yarn_spark',
-            # application_args = ["2022-05-31", "84", "1000", "/user/username/data/events", "/user/master/data/snapshots/tags_verified/actual", "/user/username/data/analytics/verified_tags_candidates_d84"],
-            # conf={
-            # "spark.driver.maxResultSize": "20g"
-            # },
-            # executor_cores = 1,
-            # executor_memory = '1g'
-            # )
-            
-            # user_interests_d7 = SparkSubmitOperator(
-            # task_id='user_interests_d7',
-            # dag=dag_spark,
-            # application ='/home/username/user_interests.py' ,
-            # conn_id= 'yarn_spark',
-            # application_args = ["2022-05-31", "7", "/user/username/data/events", "/user/username/data/analytics/user_interests_d7"],
-            # conf={
-            # "spark.driver.maxResultSize": "20g"
-            # },
-            # executor_cores = 1,
-            # executor_memory = '1g'
-            # )
+[user_locations, zone_statistics, user_recommendations]
 
-            # user_interests_d28 = SparkSubmitOperator(
-            # task_id='user_interests_d28',
-            # dag=dag_spark,
-            # application ='/home/username/user_interests.py' ,
-            # conn_id= 'yarn_spark',
-            # application_args = ["2022-05-31", "28", "/user/username/data/events", , "/user/username/data/analytics/user_interests_d28"],
-            # conf={
-            # "spark.driver.maxResultSize": "20g"
-            # },
-            # executor_cores = 1,
-            # executor_memory = '1g'
-            # )
-            
-            # connection_interests_d7 = SparkSubmitOperator(
-            # task_id='user_interests_d7',
-            # dag=dag_spark,
-            # application ='/home/username/connection_interests.py' ,
-            # conn_id= 'yarn_spark',
-            # application_args = ["2022-05-31", "7", "/user/username/data/events", , "/user/username/data/analytics/connection_interests_d7"],
-            # conf={
-            # "spark.driver.maxResultSize": "20g"
-            # },
-            # executor_cores = 1,
-            # executor_memory = '1g'
-            # )
-            
-            # connection_interests_d28 = SparkSubmitOperator(
-            # task_id='user_interests_d28',
-            # dag=dag_spark,
-            # application ='/home/username/connection_interests.py' ,
-            # conn_id= 'yarn_spark',
-            # application_args = ["2022-05-31", "28", "/user/username/data/events", , "/user/username/data/analytics/connection_interests_d28"],
-            # conf={
-            # "spark.driver.maxResultSize": "20g"
-            # },
-            # executor_cores = 1,
-            # executor_memory = '1g'
-            # )
-
-
-
-            # events_partitioned >> [verified_tags_candidates_d7, verified_tags_candidates_d84] >> [user_interests_d7, user_interests_d28] >> [connection_interests_d7, connection_interests_d28]

@@ -27,7 +27,7 @@ user_locations = SparkSubmitOperator(
     dag=dag_spark,
     application ='{{ dag_run.dag.folder }}/../scripts/step_2_user_locations.py' ,
     conn_id= 'yarn_spark',
-    application_args = ["{{ ds }}", 7, "/user/s18314377/data/geo/geo.csv", 3, "/user/master/data/geo/events", "/user/s18314377/analytics"],
+    application_args = ["{{ ds }}", 120, "/user/s18314377/data/geo/geo.csv", 27, "/user/master/data/geo/events", "/user/s18314377/analytics"],
     conf={
         "spark.driver.maxResultSize": "20g"
     },
@@ -40,7 +40,7 @@ zone_statistics = SparkSubmitOperator(
     dag=dag_spark,
     application ='{{ dag_run.dag.folder }}/../scripts/step_3_zone_statistics.py' ,
     conn_id= 'yarn_spark',
-    application_args = ["{{ ds }}", 7, "/user/s18314377/data/geo/geo.csv", "/user/master/data/geo/events", "/user/s18314377/analytics"],
+    application_args = ["{{ ds }}", 120, "/user/s18314377/data/geo/geo.csv", "/user/master/data/geo/events", "/user/s18314377/analytics"],
     conf={
         "spark.driver.maxResultSize": "20g"
     },
@@ -53,7 +53,7 @@ user_recommendations = SparkSubmitOperator(
     dag=dag_spark,
     application ='{{ dag_run.dag.folder }}/../scripts/step_4_user_recommendations.py' ,
     conn_id= 'yarn_spark',
-    application_args = ["{{ ds }}", 7, "/user/s18314377/data/geo/geo.csv", 10, "/user/master/data/geo/events", "/user/s18314377/analytics"],
+    application_args = ["{{ ds }}", 120, "/user/s18314377/data/geo/geo.csv", 1, "/user/master/data/geo/events", "/user/s18314377/analytics"],
     conf={
         "spark.driver.maxResultSize": "20g"
     },

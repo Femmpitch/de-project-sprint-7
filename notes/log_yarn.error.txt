@@ -586,4 +586,3 @@ Exception in thread "main" org.apache.spark.SparkException: Application applicat
 26/09/10 11:14:18 INFO ShutdownHookManager: Shutdown hook called
 26/09/10 11:14:18 INFO ShutdownHookManager: Deleting directory /tmp/spark-defb2356-45aa-4469-9ead-76356800b8e3
 26/09/10 11:14:18 INFO ShutdownHookManager: Deleting directory /tmp/spark-3649a3da-04db-4dbe-acfd-a9bb39d8c317
-s18314377@fv4amnvfa4gfcpo9r345:/lessons/de-project-sprint-7$

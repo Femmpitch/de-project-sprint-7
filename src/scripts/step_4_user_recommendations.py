@@ -184,7 +184,7 @@ def main():
     output_base_path = sys.argv[6]    
     
     
-    conf = SparkConf().setAppName(f"CityStatisticsJob-{date}-d{days_count}")
+    conf = SparkConf().setAppName(f"UserRecommendationsJob-{date}-d{days_count}")
     sc = SparkContext(conf=conf)
     sql = SQLContext(sc)
     
